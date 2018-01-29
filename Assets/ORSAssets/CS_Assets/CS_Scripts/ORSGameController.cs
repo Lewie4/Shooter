@@ -111,6 +111,7 @@ namespace OnRailsShooter
 
 		[Tooltip("The amount we move when taking cover")]
 		public float coverAmount = 0.5f;
+		public ORSWeapon[] weapons;
 
 		void Awake()
 		{
@@ -328,6 +329,17 @@ namespace OnRailsShooter
 							if (Input.GetButton (shootButton))
 								PickUpItem (aimPosition);
 						} 
+
+						if (Input.GetKeyDown (KeyCode.Alpha1)) {
+							SetWeapon (weapons [0]);
+							Reload (playerObject.currentWeapon);
+						} else if (Input.GetKeyDown (KeyCode.Alpha2)) {
+							SetWeapon(weapons[1]);
+							Reload (playerObject.currentWeapon);
+						} else if (Input.GetKeyDown (KeyCode.Alpha3)) {
+							SetWeapon (weapons [2]);
+							Reload (playerObject.currentWeapon);
+						}
 
 						if (Input.GetButtonDown (coverButton)) {
 							TakeCover ();
@@ -632,7 +644,7 @@ namespace OnRailsShooter
             if (playerObject && playerObject.currentWeapon.ammoCount <= 0 && playerObject.currentWeapon != playerObject.defaultWeapon)
             {
                 // Set the default weapon
-                playerObject.currentWeapon = playerObject.defaultWeapon;
+                //playerObject.currentWeapon = playerObject.defaultWeapon;
 
                 // Set the weapon and show the correct UI
                 SetWeapon(playerObject.currentWeapon);
