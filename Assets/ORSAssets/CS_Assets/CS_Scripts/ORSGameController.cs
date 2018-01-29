@@ -15,6 +15,8 @@ namespace OnRailsShooter
 	{
         // Checks if the player is moving now
         internal bool playerMoving = false;
+	
+		internal bool playerCover = false;
 
         [Tooltip("The player object which moves and shoot. Must be assigned from the scene")]
         public ORSPlayer playerObject;
@@ -43,6 +45,9 @@ namespace OnRailsShooter
 
         [Tooltip("The reload button, click it or press it to reload")]
         public string reloadButton = "Fire2";
+
+		[Tooltip("The cover button, click it or press it to take cover")]
+		public string coverButton = "Jump";
 
         // Are we using the mouse now?
         internal bool usingMouse = false;
@@ -103,6 +108,9 @@ namespace OnRailsShooter
 
         [Tooltip("The ranks we get based on our score at the end of the game. Each rank has a unique icon")]
         public Rank[] gameEndRanks;
+
+		[Tooltip("The amount we move when taking cover")]
+		public float coverAmount = 0.5f;
 
 		void Awake()
 		{
@@ -307,13 +315,26 @@ namespace OnRailsShooter
                     // If we press the shoot button, SHOOT!
                     if ( !EventSystem.current.IsPointerOverGameObject())
                     {
-                        // Check if we have an automatic weapon, a single shot weapon, or if we ran out of ammo
-                        if ( playerObject.currentWeapon.autoFire == false && Input.GetButtonDown(shootButton) ) Shoot(aimPosition);
-                        else if ( playerObject.currentWeapon.autoFire == true && Input.GetButton(shootButton) ) Shoot(aimPosition);
-                        else if ( playerObject.currentWeapon.ammoCount <= 0 && Input.GetButtonDown(reloadButton) ) Reload(playerObject.currentWeapon);
+						if (!playerCover) {
+							// Check if we have an automatic weapon, a single shot weapon, or if we ran out of ammo
+							if (playerObject.currentWeapon.autoFire == false && Input.GetButtonDown (shootButton))
+								Shoot (aimPosition);
+							else if (playerObject.currentWeapon.autoFire == true && Input.GetButton (shootButton))
+								Shoot (aimPosition);
+							//else if (Input.GetButtonDown (reloadButton))
+							//	Reload (playerObject.currentWeapon);
 
-                        // Check if we picked up an item
-                        if ( Input.GetButton(shootButton) ) PickUpItem(aimPosition);
+							// Check if we picked up an item
+							if (Input.GetButton (shootButton))
+								PickUpItem (aimPosition);
+						} 
+
+						if (Input.GetButtonDown (coverButton)) {
+							TakeCover ();
+							if (playerCover && playerObject.currentWeapon.ammoCount < playerObject.currentWeapon.ammo) {
+								Reload (playerObject.currentWeapon);
+							}
+						}
                     }
 
                     // Check if we killed all enemies at a waypoint, and move to the next
@@ -361,6 +382,11 @@ namespace OnRailsShooter
         {
             if (playerObject && targetWaypoint )
             {
+				//Get out of cover
+				if (playerCover) {
+					TakeCover ();
+				}
+
                 // The player is moving
                 playerMoving = true;
 
@@ -724,6 +750,23 @@ namespace OnRailsShooter
                 }
             }
         }
+
+		/// <summary>
+		/// Player moves in and out of cover
+		/// </summary>
+		public void TakeCover()
+		{			
+			if (playerObject && !playerMoving)
+			{
+				coverAmount *= -1;
+				
+				Vector3 coverPos = new Vector3 (playerObject.transform.position.x, playerObject.transform.position.y + coverAmount, playerObject.transform.position.z);
+				// Move the player towards the target waypoint
+				playerObject.transform.position = coverPos;
+
+				playerCover = !playerCover;
+			}
+		}
 
         /// <summary>
         /// Shoots from the player position to the crosshair position and checks if we hit anything

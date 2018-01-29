@@ -49,7 +49,7 @@ namespace OnRailsShooter
             // If the projectile reaches the hit range of the player, hit it!
             if ( Vector3.Distance(thisTransform.position, playerObject.transform.position) < 3 )
             {
-                if (playerObject)
+				if (playerObject && !gameController.playerCover)
                 {
                     // If the player's hurt time is off, it means that the player can be hurt again
                     if (playerObject.hurtTimeCount <= 0)
